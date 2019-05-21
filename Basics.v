@@ -637,6 +637,8 @@ Proof. simpl. reflexivity.  Qed.
 Example test_oddb2:    oddb 4 = false.
 Proof. simpl. reflexivity.  Qed.
 
+
+
 (** (You will notice if you step through these proofs that
     [simpl] actually has no effect on the goal -- all of the work is
     done by [reflexivity].  We'll see more about why that is shortly.)
@@ -711,13 +713,17 @@ Fixpoint exp (base power : nat) : nat :=
 
     Translate this into Coq. *)
 
-Fixpoint factorial (n:nat) : nat
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint factorial (n:nat) : nat :=
+  match n with 
+  | 0 => 1
+  | S n' => mult n (factorial n')
+  end.
 
 Example test_factorial1:          (factorial 3) = 6.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity.  Qed.
+
 Example test_factorial2:          (factorial 5) = (mult 10 12).
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity.  Qed.
 (** [] *)
 
 (** Again, we can make numerical expressions easier to read and write
@@ -780,6 +786,8 @@ Fixpoint leb (n m : nat) : bool :=
       end
   end.
 
+Check leb.
+
 Example test_leb1:             (leb 2 2) = true.
 Proof. simpl. reflexivity.  Qed.
 Example test_leb2:             (leb 2 4) = true.
@@ -804,17 +812,27 @@ Proof. simpl. reflexivity.  Qed.
     function.  (It can be done with just one previously defined
     function, but you can use two if you need to.) *)
 
-Definition ltb (n m : nat) : bool
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition ltb (n m : nat) : bool := (leb n m) && (negb (eqb n m)).
+(** REVISIT too many functions?? **)
+
+Fixpoint ltb' (n m : nat) : bool := 
+  match n, m with
+  | 0, 0  => false
+  | 0, _ => true
+  | S _ ,0 => false
+  | S n', S m' => ltb n' m' 
+  end. 
+
+
 
 Notation "x <? y" := (ltb x y) (at level 70) : nat_scope.
 
 Example test_ltb1:             (ltb 2 2) = false.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity. Qed.
 Example test_ltb2:             (ltb 2 4) = true.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity. Qed.
 Example test_ltb3:             (ltb 4 2) = false.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity. Qed.
 (** [] *)
 
 (* ################################################################# *)
@@ -838,6 +856,9 @@ Example test_ltb3:             (ltb 4 2) = false.
 Theorem plus_O_n : forall n : nat, 0 + n = n.
 Proof.
   intros n. simpl. reflexivity.  Qed.
+
+(** QUESTION: intros is not needed, reflexivity does the job well, 
+    when is it than needed - maybe for readablity??**)
 
 (** (You may notice that the above statement looks different in
     the [.v] file in your IDE than it does in the HTML rendition in
@@ -897,11 +918,11 @@ Proof.
 
 Theorem plus_1_l : forall n:nat, 1 + n = S n.
 Proof.
-  intros n. reflexivity.  Qed.
+  intros n. simpl . reflexivity.  Qed.
 
 Theorem mult_0_l : forall n:nat, 0 * n = 0.
 Proof.
-  intros n. reflexivity.  Qed.
+  intros n. simpl. reflexivity.  Qed.
 
 (** The [_l] suffix in the names of these theorems is
     pronounced "on the left." *)
@@ -940,8 +961,8 @@ Theorem plus_id_example : forall n m:nat,
 Proof.
   (* move both quantifiers into the context: *)
   intros n m.
-  (* move the hypothesis into the context: *)
   intros H.
+  (* move the hypothesis into the context: *)
   (* rewrite the goal using the hypothesis: *)
   rewrite -> H.
   reflexivity.  Qed.
@@ -966,7 +987,13 @@ Proof.
 Theorem plus_id_exercise : forall n m o : nat,
   n = m -> m = o -> n + m = m + o.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m o.
+  intros H.
+  intros I.
+  rewrite <- I.
+  rewrite <-  H.
+  reflexivity.
+Qed.
 (** [] *)
 
 (** The [Admitted] command tells Coq that we want to skip trying
@@ -998,7 +1025,12 @@ Theorem mult_S_1 : forall n m : nat,
   m = S n ->
   m * (1 + n) = m * m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m.
+  simpl .
+  intros H.
+  rewrite <- H.
+  reflexivity.
+Qed.
 
   (* (N.b. This proof can actually be completed with tactics other than
      [rewrite], but please do use [rewrite] for the sake of the exercise.) 
@@ -1042,7 +1074,8 @@ Abort.
 Theorem plus_1_neq_0 : forall n : nat,
   (n + 1) =? 0 = false.
 Proof.
-  intros n. destruct n as [| n'] eqn:E.
+  intros n. 
+  destruct n as [| n'] eqn:E.
   - reflexivity.
   - reflexivity.   Qed.
 
@@ -1226,14 +1259,34 @@ Qed.
 Theorem andb_true_elim2 : forall b c : bool,
   andb b c = true -> c = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros b c H.
+  destruct c.
+    + reflexivity.
+    + rewrite <-H .
+      destruct b.
+       - reflexivity.
+       - reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 1 star, standard (zero_nbeq_plus_1)  *)
 Theorem zero_nbeq_plus_1 : forall n : nat,
   0 =? (n + 1) = false.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros [|n].
+    * reflexivity.
+    * reflexivity.
+Qed.
+
+Theorem zero_nbeq_plus_1' : forall n : nat,
+  0 =? (n + 1) = false.
+Proof.
+  intros n. 
+  destruct n as [| n'] eqn:E.
+    * simpl . reflexivity.
+    * simpl . reflexivity.
+Qed.
+
 (** [] *)
 
 (* ================================================================= *)
@@ -1340,7 +1393,12 @@ Theorem identity_fn_applied_twice :
   (forall (x : bool), f x = x) ->
   forall (b : bool), f (f b) = b.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros f H.
+  intros x.
+  rewrite <- H.
+  rewrite <- H.
+  reflexivity.
+Qed.
 
 (** [] *)
 
@@ -1349,6 +1407,20 @@ Proof.
     Now state and prove a theorem [negation_fn_applied_twice] similar
     to the previous one but where the second hypothesis says that the
     function [f] has the property that [f x = negb x]. *)
+Theorem negation_fn_applied_twice:
+  forall (f : bool -> bool),
+  (forall (x : bool), f x = negb x) ->
+  forall (b : bool), f (f b) = b.
+Proof.
+  intros f H.
+  intros x.
+  rewrite -> H.
+  destruct x as [|] eqn:E.
+  + rewrite -> H. reflexivity.
+  + rewrite -> H. reflexivity.
+Qed.
+
+
 
 (* FILL IN HERE *)
 (* The [Import] statement on the next line tells Coq to use the
