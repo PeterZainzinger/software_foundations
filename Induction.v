@@ -197,23 +197,38 @@ Proof.
 Theorem mult_0_r : forall n:nat,
   n * 0 = 0.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n. induction n as [| n' IHn'].
+  simpl. reflexivity.
+  simpl. rewrite -> IHn'. reflexivity.
+Qed.
+
 
 Theorem plus_n_Sm : forall n m : nat,
   S (n + m) = n + (S m).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n .  intros m .
+  induction n as [| n' IHn'].
+  simpl.  reflexivity.
+  simpl. rewrite -> IHn'. reflexivity.
+Qed.
 
 Theorem plus_comm : forall n m : nat,
   n + m = m + n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n .  intros m .
+  induction n as [| n' IHn'].
+  + simpl. rewrite <-  plus_n_O.  reflexivity.
+  + simpl. rewrite -> IHn'. rewrite plus_n_Sm.  reflexivity.
+Qed.
 
 Theorem plus_assoc : forall n m p : nat,
   n + (m + p) = (n + m) + p.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros n .  intros m . intros p.
+  induction n as [| n' IHn'].
+  + simpl.  reflexivity.
+  + simpl. rewrite -> IHn'.  reflexivity.
+Qed.
 
 (** **** Exercise: 2 stars, standard (double_plus)  
 
@@ -229,8 +244,11 @@ Fixpoint double (n:nat) :=
 
 Lemma double_plus : forall n, double n = n + n .
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros n .  
+  induction n as [| n' IHn'].
+  + simpl.  reflexivity.
+  + simpl. rewrite -> IHn'. rewrite -> plus_n_Sm . reflexivity.
+Qed.
 
 (** **** Exercise: 2 stars, standard, optional (evenb_S)  
 
@@ -244,9 +262,11 @@ Proof.
 Theorem evenb_S : forall n : nat,
   evenb (S n) = negb (evenb n).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
-
+  intros n. simpl.
+  induction n as [| n' IHn'].
+   + reflexivity.
+   + simpl.  rewrite -> IHn'. rewrite -> negb_involutive. reflexivity.
+Qed.
 (** **** Exercise: 1 star, standard (destruct_induction)  
 
     Briefly explain the difference between the tactics [destruct]
@@ -280,7 +300,8 @@ Proof.
   intros n m.
   assert (H: 0 + n = n). { reflexivity. }
   rewrite -> H.
-  reflexivity.  Qed.
+  reflexivity.  
+Qed.
 
 (** The [assert] tactic introduces two sub-goals.  The first is
     the assertion itself; by prefixing it with [H:] we name the
@@ -316,6 +337,7 @@ Proof.
   (* We just need to swap (n + m) for (m + n)... seems
      like plus_comm should do the trick! *)
   rewrite -> plus_comm.
+  (** QUESTION: can we make rewrite a bit smarter ;) **)
   (* Doesn't work...Coq rewrites the wrong plus! *)
 Abort.
 
@@ -485,18 +507,36 @@ Definition manual_grade_for_plus_comm_informal : option (nat*string) := None.
 Theorem plus_swap : forall n m p : nat,
   n + (m + p) = m + (n + p).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m p.
+  induction n as [| n' IHn'].
+  + reflexivity.
+  + simpl. rewrite -> IHn'.  rewrite <- plus_n_Sm  . reflexivity.  
+Qed.
+
+
 
 (** Now prove commutativity of multiplication.  (You will probably
     need to define and prove a separate subsidiary theorem to be used
     in the proof of this one.  You may find that [plus_swap] comes in
     handy.) *)
 
+Lemma mult_comm_lemma : forall n m, m * S n = m + m * n.
+Proof.
+  intros n m.
+  induction m as [| m' IHm'].
+    simpl. reflexivity.
+    simpl. rewrite -> plus_swap. rewrite -> IHm'. reflexivity.
+Qed.
+
 Theorem mult_comm : forall m n : nat,
   m * n = n * m.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros n m.
+  induction n as [| n' IHn'].
+  +  rewrite -> mult_0_r. reflexivity.
+  +  simpl. rewrite -> IHn'.  rewrite mult_comm_lemma . reflexivity.
+Qed.
+
 
 (** **** Exercise: 3 stars, standard, optional (more_exercises)  
 
