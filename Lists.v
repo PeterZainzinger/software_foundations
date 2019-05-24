@@ -113,6 +113,7 @@ Proof.
 Theorem surjective_pairing_stuck : forall (p : natprod),
   p = (fst p, snd p).
 Proof.
+  intros p.
   simpl. (* Doesn't reduce anything! *)
 Abort.
 
@@ -134,15 +135,15 @@ Proof.
 Theorem snd_fst_is_swap : forall (p : natprod),
   (snd p, fst p) = swap_pair p.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros p. destruct p as [n m] . reflexivity.
+Qed.
 
 (** **** Exercise: 1 star, standard, optional (fst_swap_is_snd)  *)
 Theorem fst_swap_is_snd : forall (p : natprod),
   fst (swap_pair p) = snd p.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros p. destruct p as [n m] . reflexivity.
+Qed.
 
 (* ################################################################# *)
 (** * Lists of Numbers *)
@@ -179,6 +180,7 @@ Notation "[ x ; .. ; y ]" := (cons x .. (cons y nil) ..).
 Definition mylist1 := 1 :: (2 :: (3 :: nil)).
 Definition mylist2 := 1 :: 2 :: 3 :: nil.
 Definition mylist3 := [1;2;3].
+
 
 (** The [at level 60] part tells Coq how to parenthesize
     expressions that involve both [::] and some other infix operator.
@@ -290,34 +292,45 @@ Proof. reflexivity.  Qed.
     [countoddmembers] below. Have a look at the tests to understand
     what these functions should do. *)
 
-Fixpoint nonzeros (l:natlist) : natlist
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint nonzeros (l:natlist) : natlist:= 
+  match l with
+  | nil    => nil
+  | 0 :: t => nonzeros t
+  | h :: t => h :: nonzeros t
+  end.
 
 Example test_nonzeros:
   nonzeros [0;1;0;2;3;0;0] = [1;2;3].
-  (* FILL IN HERE *) Admitted.
+Proof.  reflexivity.  Qed.
 
-Fixpoint oddmembers (l:natlist) : natlist
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint oddmembers (l:natlist) : natlist :=
+  match l with 
+  | nil  => nil
+  | h :: t => (match oddb h with
+      | true => [h]
+      | false => [] end) ++ oddmembers t end.
 
+(** QUESTION: better way? **)
+
+ 
 Example test_oddmembers:
   oddmembers [0;1;0;2;3;0;0] = [1;3].
-  (* FILL IN HERE *) Admitted.
+Proof.  reflexivity.  Qed.
 
-Definition countoddmembers (l:natlist) : nat
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
 
+Definition countoddmembers (l:natlist) : nat := length (oddmembers l).
+    
 Example test_countoddmembers1:
   countoddmembers [1;0;3;1;4;5] = 4.
-  (* FILL IN HERE *) Admitted.
+Proof.  reflexivity.  Qed.
 
 Example test_countoddmembers2:
   countoddmembers [0;2;4] = 0.
-  (* FILL IN HERE *) Admitted.
+Proof.  reflexivity.  Qed.
 
 Example test_countoddmembers3:
   countoddmembers nil = 0.
-  (* FILL IN HERE *) Admitted.
+Proof.  reflexivity.  Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, advanced (alternate)  
@@ -334,24 +347,34 @@ Example test_countoddmembers3:
     of both lists at the same time.  One possible solution involves
     defining a new kind of pairs, but this is not the only way.)  *)
 
-Fixpoint alternate (l1 l2 : natlist) : natlist
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint alternate (l1 l2 : natlist) : natlist := 
+  match l1 with
+  | nil    => l2
+  | h1 :: t1 => h1 :: (match l2 with 
+    |  nil => t1
+    |  h2 :: t2 => h2 :: (alternate t1 t2) 
+    end)
+  end.
+
+(** QUESTION: what's the (more) obvious way? **) 
 
 Example test_alternate1:
   alternate [1;2;3] [4;5;6] = [1;4;2;5;3;6].
-  (* FILL IN HERE *) Admitted.
+Proof.  reflexivity.  Qed.
 
 Example test_alternate2:
   alternate [1] [4;5;6] = [1;4;5;6].
-  (* FILL IN HERE *) Admitted.
+Proof.  reflexivity.  Qed.
 
 Example test_alternate3:
   alternate [1;2;3] [4] = [1;4;2;3].
-  (* FILL IN HERE *) Admitted.
+Proof.  simpl . reflexivity.  Qed.
+
 
 Example test_alternate4:
   alternate [] [20;30] = [20;30].
-  (* FILL IN HERE *) Admitted.
+Proof.  simpl . reflexivity.  Qed.
+
 (** [] *)
 
 (* ----------------------------------------------------------------- *)
