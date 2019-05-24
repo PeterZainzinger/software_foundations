@@ -610,9 +610,10 @@ Proof.
 Theorem eqb_refl : forall n : nat,
   true = (n =? n).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
-
+  induction n as [| n' IHn'].
+  + reflexivity.
+  + rewrite -> IHn'. reflexivity.
+Qed.
 (** **** Exercise: 2 stars, standard, optional (plus_swap')  
 
     The [replace] tactic allows you to specify a particular subterm to
