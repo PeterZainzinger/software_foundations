@@ -155,16 +155,18 @@ Inductive grumble (X:Type) : Type :=
   | d (m : mumble)
   | e (x : X).
 
+Check mumble.
+
+
 (** Which of the following are well-typed elements of [grumble X] for
     some type [X]?  (Add YES or NO to each line.)
-      - [d (b a 5)]
-      - [d mumble (b a 5)]
-      - [d bool (b a 5)]
-      - [e bool true]
-      - [e mumble (b c 0)]
-      - [e bool (b c 0)]
-      - [c]  *)
-(* FILL IN HERE *)
+      - [d (b a 5)]           NO
+      - [d mumble (b a 5)]    YES 
+      - [d bool (b a 5)]      YES
+      - [e bool true]         YES
+      - [e mumble (b c 0)]    YES
+      - [e bool (b c 0)]      YES
+      - [c]                NO **) 
 End MumbleGrumble.
 
 (* Do not modify the following line: *)
@@ -406,17 +408,32 @@ Definition list123''' := [1; 2; 3].
 Theorem app_nil_r : forall (X:Type), forall l:list X,
   l ++ [] = l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction l.
+    + reflexivity. 
+    + simpl. rewrite -> IHl. reflexivity.
+Qed.
 
 Theorem app_assoc : forall A (l m n:list A),
   l ++ m ++ n = (l ++ m) ++ n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros TYPE.
+  (** let's done some recyling ;) **)
+  intros l1 l2 l3. induction l1 as [| n l1' IHl1'].
+  - (* l1 = nil *)
+    reflexivity. 
+  - (* l1 = cons n l1' *)
+    simpl. rewrite -> IHl1'. reflexivity.  Qed.
+
 
 Lemma app_length : forall (X:Type) (l1 l2 : list X),
   length (l1 ++ l2) = length l1 + length l2.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros TYPE.
+  intros l1 l2.
+  induction l1.
+    +  reflexivity.
+    +  simpl. rewrite -> IHl1. reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, standard, optional (more_poly_exercises)  
@@ -426,12 +443,33 @@ Proof.
 Theorem rev_app_distr: forall X (l1 l2 : list X),
   rev (l1 ++ l2) = rev l2 ++ rev l1.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros TYPE.
+  intros l1 l2.
+  induction l1.
+  + simpl.  rewrite -> app_nil_r. reflexivity.
+  + simpl. rewrite -> IHl1. rewrite -> app_assoc. reflexivity.
+Qed.
+
+Lemma cons_rev : forall X : Type, forall l : list X, forall n: X,
+  n :: rev l = rev (app l [n]).
+Proof.
+  intros TYPE l n.
+  induction l as [| n' l'].
+  - reflexivity.
+  - simpl.  rewrite <- IHl'.
+    reflexivity.
+Qed.
+
+
 
 Theorem rev_involutive : forall X : Type, forall l : list X,
   rev (rev l) = l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros TYPE.
+  induction l. 
+   + reflexivity.
+   + simpl.   rewrite <- cons_rev. rewrite -> IHl. reflexivity.
+Qed.
 (** [] *)
 
 (* ================================================================= *)
@@ -515,14 +553,16 @@ Fixpoint combine {X Y : Type} (lx : list X) (ly : list Y)
     given unit test. *)
 
 Fixpoint split {X Y : Type} (l : list (X*Y))
-               : (list X) * (list Y)
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+               : (list X) * (list Y):=
+    match l with
+    | []  => ([],[])
+    | (x, y) :: t => (x :: fst (split t), y :: snd (split t))
+    end.
+
 
 Example test_split:
   split [(1,false);(2,false)] = ([1;2],[false;false]).
-Proof.
-(* FILL IN HERE *) Admitted.
-(** [] *)
+Proof. reflexivity. Qed.
 
 (* ================================================================= *)
 (** ** Polymorphic Options *)
@@ -567,8 +607,11 @@ Proof. reflexivity. Qed.
     [hd_error] function from the last chapter. Be sure that it
     passes the unit tests below. *)
 
-Definition hd_error {X : Type} (l : list X) : option X
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition hd_error {X : Type} (l : list X) : option X :=
+  match l with
+  | [] => None
+  | h::t => Some h
+  end.
 
 (** Once again, to force the implicit arguments to be explicit,
     we can use [@] before the name of the function. *)
@@ -576,10 +619,9 @@ Definition hd_error {X : Type} (l : list X) : option X
 Check @hd_error.
 
 Example test_hd_error1 : hd_error [1;2] = Some 1.
- (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 Example test_hd_error2 : hd_error  [[1];[2]]  = Some [1].
- (* FILL IN HERE *) Admitted.
-(** [] *)
+Proof. reflexivity. Qed.
 
 (* ################################################################# *)
 (** * Functions as Data *)
@@ -696,16 +738,18 @@ Proof. reflexivity.  Qed.
     and returns a list of just those that are even and greater than
     7. *)
 
-Definition filter_even_gt7 (l : list nat) : list nat
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Compute (filter (fun l => 7 <=? l) [1;2;8]).
+
+Definition filter_even_gt7 (l : list nat) : list nat :=
+   filter (fun l => andb (evenb l) (7 <=? l)) l.
 
 Example test_filter_even_gt7_1 :
   filter_even_gt7 [1;2;6;9;10;3;12;8] = [10;12;8].
- (* FILL IN HERE *) Admitted.
+Proof. reflexivity.  Qed.
 
 Example test_filter_even_gt7_2 :
   filter_even_gt7 [5;2;6;19;129] = [].
- (* FILL IN HERE *) Admitted.
+Proof. reflexivity.  Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, standard (partition)  
@@ -723,16 +767,13 @@ Example test_filter_even_gt7_2 :
    two sublists should be the same as their order in the original
    list. *)
 
-Definition partition {X : Type}
-                     (test : X -> bool)
-                     (l : list X)
-                   : list X * list X
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition partition {X : Type} (test : X -> bool) (l : list X) : list X * list X :=
+  (filter test l , filter (fun x => negb (test x)) l).
 
 Example test_partition1: partition oddb [1;2;3;4;5] = ([1;3;5], [2;4]).
-(* FILL IN HERE *) Admitted.
+Proof. reflexivity.  Qed.
 Example test_partition2: partition (fun x => false) [5;9;0] = ([], [5;9;0]).
-(* FILL IN HERE *) Admitted.
+Proof. reflexivity.  Qed.
 (** [] *)
 
 (* ================================================================= *)
@@ -779,10 +820,25 @@ Proof. reflexivity.  Qed.
     Show that [map] and [rev] commute.  You may need to define an
     auxiliary lemma. *)
 
+Lemma  map_rev_aux : forall (X Y : Type) (f : X -> Y) (l : list X) (x : X),
+  app (map f l) [f x] = map f (app l [x]).
+Proof.
+  intros X Y f l x.
+  induction l.
+    + reflexivity.
+    + simpl. rewrite -> IHl. reflexivity.
+Qed.
+  
 Theorem map_rev : forall (X Y : Type) (f : X -> Y) (l : list X),
   map f (rev l) = rev (map f l).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X Y.
+  intros mapper l.
+  induction l.
+   + reflexivity.
+   + simpl. rewrite <- IHl . rewrite map_rev_aux . reflexivity.
+Qed.
+
 (** [] *)
 
 (** **** Exercise: 2 stars, standard, recommended (flat_map)  
@@ -797,14 +853,17 @@ Proof.
       = [1; 2; 3; 5; 6; 7; 10; 11; 12].
 *)
 
-Fixpoint flat_map {X Y: Type} (f: X -> list Y) (l: list X)
-                   : (list Y)
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint flat_map {X Y: Type} (f: X -> list Y) (l: list X) : (list Y) := 
+    match l with 
+        | [] => []
+        | h::t => (f h) ++ (flat_map f t)
+    end.
+
 
 Example test_flat_map1:
   flat_map (fun n => [n;n;n]) [1;5;4]
   = [1; 1; 1; 5; 5; 5; 4; 4; 4].
- (* FILL IN HERE *) Admitted.
+Proof. reflexivity.  Qed.
 (** [] *)
 
 (** Lists are not the only inductive type for which [map] makes sense.
@@ -961,7 +1020,12 @@ Proof. reflexivity. Qed.
 Theorem fold_length_correct : forall X (l : list X),
   fold_length l = length l.
 Proof.
-(* FILL IN HERE *) Admitted.
+  intros X l . 
+  unfold fold_length.
+  induction l.
+    + reflexivity.
+    + simpl . rewrite -> IHl . reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, standard (fold_map)  

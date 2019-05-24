@@ -876,7 +876,7 @@ Proof.
     + simpl . rewrite -> IHl1' . rewrite app_assoc . reflexivity.
 Qed.
 
-Lemma cons_rev : forall l : natlist, forall n : nat,
+Lemma cons_rev_nat : forall l : natlist, forall n : nat,
   n :: rev l = rev (app l [n]).
 Proof.
   intros l n.
@@ -892,7 +892,7 @@ Proof.
   intros l. induction l as [|n l' IHl'].
     + reflexivity.
     + simpl .       
-      rewrite <- cons_rev.
+      rewrite <- cons_rev_nat.
       rewrite -> IHl'.
       reflexivity.
 Qed.
