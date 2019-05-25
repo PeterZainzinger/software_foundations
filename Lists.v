@@ -529,7 +529,7 @@ Theorem bag_theorem : forall (s: bag) (n:nat),
 Proof.
   intros s n. induction s as [|  s' l' IHs'].
   + simpl . rewrite <- eqb_refl. reflexivity.
-  +   (** rewrite -> IHs'. QUESTION: why is this not working **)
+  +   (** rewrite IHs' with (l':= s' :: l') QUESTION: why is this not working **)
  Admitted.
 
 

@@ -27,8 +27,8 @@ Theorem silly1 : forall (n m o p : nat),
      [n;o] = [n;p] ->
      [n;o] = [m;p].
 Proof.
-  intros n m o p eq1 eq2.
-  rewrite <- eq1.
+  intros n m o p eq1 eq2. 
+  rewrite <- eq1. 
 
 (** Here, we could finish with "[rewrite -> eq2.  reflexivity.]" as we
     have done several times before.  We can achieve the same effect in
@@ -74,7 +74,9 @@ Theorem silly_ex :
      oddb 3 = true ->
      evenb 4 = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros eq1 eq2. 
+  apply eq2. 
+Qed.
 (** [] *)
 
 (** To use the [apply] tactic, the (conclusion of the) fact
@@ -103,11 +105,17 @@ Proof.
     just hypotheses in the context.  Remember that [Search] is
     your friend.) *)
 
+
 Theorem rev_exercise1 : forall (l l' : list nat),
      l = rev l' ->
      l' = rev l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros l l' H.  
+  induction l.
+    + rewrite -> H . symmetry. apply rev_involutive.
+    + rewrite -> H  . symmetry .  apply rev_involutive.
+Qed.
+
 (** [] *)
 
 (** **** Exercise: 1 star, standard, optional (apply_rewrite)  
@@ -131,7 +139,7 @@ Example trans_eq_example : forall (a b c d e f : nat),
      [c;d] = [e;f] ->
      [a;b] = [e;f].
 Proof.
-  intros a b c d e f eq1 eq2.
+  intros a b c d e f eq1 eq2. 
   rewrite -> eq1. rewrite -> eq2. reflexivity.  Qed.
 
 (** Since this is a common pattern, we might like to pull it out
@@ -176,8 +184,16 @@ Example trans_eq_exercise : forall (n m o p : nat),
      (n + p) = m ->
      (n + p) = (minustwo o).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m o p eq1. 
+  rewrite <- eq1. 
+  intros H.
+  apply H.
+Qed.
+
+(** QUESTION: no apply with needed, why 3 stars? *)
+
 (** [] *)
+
 
 (* ################################################################# *)
 (** * The [injection] and [discriminate] Tactics *)
@@ -216,7 +232,7 @@ Theorem S_injective : forall (n m : nat),
   S n = S m ->
   n = m.
 Proof.
-  intros n m H1.
+  intros n m H1.  
   assert (H2: n = pred (S n)). { reflexivity. }
   rewrite H2. rewrite H1. reflexivity.
 Qed.
@@ -233,7 +249,7 @@ Theorem S_injective' : forall (n m : nat),
   S n = S m ->
   n = m.
 Proof.
-  intros n m H.
+  intros n m H. 
 
 (** By writing [injection H] at this point, we are asking Coq to
     generate all equations that it can infer from [H] using the
@@ -273,7 +289,14 @@ Example injection_ex3 : forall (X : Type) (x y z : X) (l j : list X),
   y :: l = x :: j ->
   x = y.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X x y z l j H1 H2. 
+  injection H1. 
+  intros H1' H2'.
+  injection H2. 
+  intros H3' H4'.
+  rewrite <- H4'. reflexivity.
+Qed.
+
 (** [] *)
 
 (** So much for injectivity of constructors.  What about disjointness?
@@ -345,7 +368,9 @@ Example discriminate_ex3 :
     x :: y :: l = [] ->
     x = z.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X x y z l j H.
+  discriminate H.
+Qed.
 (** [] *)
 
 (** The injectivity of constructors allows us to reason that
@@ -420,7 +445,19 @@ Theorem plus_n_n_injective : forall n m,
      n = m.
 Proof.
   intros n. induction n as [| n'].
-  (* FILL IN HERE *) Admitted.
+  + intros m H. destruct m.   
+    -  reflexivity.
+    -  discriminate H.
+  + intros m H. destruct m.   
+    - discriminate.
+    - simpl.  
+     (** plus_n_Sm S (n + m) = n + (S m).  one rewrite for each side in H*)
+      rewrite <- plus_n_Sm with (m:=n') in H .
+      rewrite <- plus_n_Sm with (m:=m) in H .
+      (** H : S (S n' + n') = S m + S m *)
+      injection H as T. 
+      apply IHn' in T. rewrite T. reflexivity.
+Qed.
 (** [] *)
 
 (* ################################################################# *)
