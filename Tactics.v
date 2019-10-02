@@ -46,7 +46,7 @@ Theorem silly2 : forall (n m o p : nat),
      (forall (q r : nat), q = r -> [q;o] = [r;p]) ->
      [n;o] = [m;p].
 Proof.
-  intros n m o p eq1 eq2.
+  intros n m o p eq1 eq2. 
   apply eq2. apply eq1.  Qed.
 
 (** Typically, when we use [apply H], the statement [H] will
@@ -267,7 +267,7 @@ Theorem injection_ex1 : forall (n m o : nat),
   [n; m] = [o; o] ->
   [n] = [m].
 Proof.
-  intros n m o H.
+  intros n m o H. 
   injection H. intros H1 H2.
   rewrite H1. rewrite H2. reflexivity.
 Qed.
@@ -448,8 +448,8 @@ Proof.
   + intros m H. destruct m.   
     -  reflexivity.
     -  discriminate H.
-  + intros m H. destruct m.   
-    - discriminate.
+  +  intros m H. destruct m.   
+    -  discriminate.
     - simpl.  
      (** plus_n_Sm S (n + m) = n + (S m).  one rewrite for each side in H*)
       rewrite <- plus_n_Sm with (m:=n') in H .
@@ -459,6 +459,7 @@ Proof.
       apply IHn' in T. rewrite T. reflexivity.
 Qed.
 (** [] *)
+(** QUESTION: why so long?*)
 
 (* ################################################################# *)
 (** * Varying the Induction Hypothesis *)
@@ -614,6 +615,13 @@ Proof.
 Theorem eqb_true : forall n m,
     n =? m = true -> n = m.
 Proof.
+  intros n. induction n as [| n'].
+   + intros m. destruct m.
+    - reflexivity.
+    - discriminate.
+   + intros m.  induction m.
+    -  simpl. discriminate. 
+    - simpl. intros H. 
   (* FILL IN HERE *) Admitted.
 (** [] *)
 

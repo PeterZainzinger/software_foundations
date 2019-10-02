@@ -336,8 +336,9 @@ Proof.
   intros n m p q.
   (* We just need to swap (n + m) for (m + n)... seems
      like plus_comm should do the trick! *)
-  rewrite -> plus_comm.
-  (** QUESTION: can we make rewrite a bit smarter ;) **)
+  rewrite -> (plus_comm n m).
+  reflexivity.
+  (** QUESTION: can we make rewrite a bit smarter -  YES ;) **)
   (* Doesn't work...Coq rewrites the wrong plus! *)
 Abort.
 
@@ -609,12 +610,12 @@ Proof.
     + reflexivity.
     + simpl . rewrite plus_comm with (n:=p).
       rewrite IHn. 
-      rewrite plus_comm with (n:=n * p + m * p).
+      rewrite (plus_comm (n * p + m * p)) .
       rewrite plus_assoc .
       reflexivity.
 Qed. 
 
-(** QUESTION: simpler proof **)
+(** QUESTION: simpler proof - Mabye NO**)
 
 Theorem mult_assoc : forall n m p : nat,
   n * (m * p) = (n * m) * p.

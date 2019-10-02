@@ -310,6 +310,15 @@ Fixpoint oddmembers (l:natlist) : natlist :=
       | true => [h]
       | false => [] end) ++ oddmembers t end.
 
+Fixpoint oddmembers_alt (l:natlist) : natlist :=
+  match l with 
+  | nil  => nil
+  | h :: t => if oddb h then h :: (oddmembers_alt t) else oddmembers_alt t
+end.
+
+
+
+
 (** QUESTION: better way? **)
 
  
@@ -346,6 +355,15 @@ Proof.  reflexivity.  Qed.
     look for a slightly more verbose solution that considers elements
     of both lists at the same time.  One possible solution involves
     defining a new kind of pairs, but this is not the only way.)  *)
+Fixpoint alternate_fail (l1 l2 : natlist) : natlist := 
+  match l1, l2 with
+  | nil, nil  => nil
+  | _, nil  => nil
+  | nil, _ => nil
+  | h1 :: t1, h2 :: t2 => h1 :: h2 :: (alternate_fail t1 t2)
+  end.
+
+
 
 Fixpoint alternate (l1 l2 : natlist) : natlist := 
   match l1 with
@@ -523,13 +541,27 @@ Proof. reflexivity. Qed.
     help if you get stuck! *)
 
 
+Lemma n_eqb_n: forall n:nat,
+  eqb n n = true.
+Proof.
+  induction n.
+    + reflexivity.
+    + simpl. assumption.
+Qed.
+
+
 
 Theorem bag_theorem : forall (s: bag) (n:nat),
   count n (add n s) = (count n s) + 1.
 Proof.
   intros s n. induction s as [|  s' l' IHs'].
   + simpl . rewrite <- eqb_refl. reflexivity.
-  +   (** rewrite IHs' with (l':= s' :: l') QUESTION: why is this not working **)
+  +   simpl. destruct (n =? n) eqn:E.
+    - destruct (n =? s') ;
+       rewrite plus_assoc ; rewrite (plus_comm (_ + count n l'));  rewrite plus_assoc; reflexivity.
+    - rewrite n_eqb_n in E. discriminate .
+Qed.
+  (** rewrite IHs' with (l':= s' :: l') QUESTION: why is this not working **)
  Admitted.
 
 
